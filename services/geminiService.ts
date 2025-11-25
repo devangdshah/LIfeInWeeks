@@ -13,10 +13,10 @@ export const calculateLifeExpectancy = async (data: UserData): Promise<LifeExpec
   const now = new Date();
   const ageInMillis = now.getTime() - birthDate.getTime();
   const currentAge = ageInMillis / (1000 * 60 * 60 * 24 * 365.25);
-  
+
   // Default fallback if API fails or key is missing
   const fallbackAge = 80;
-  
+
   try {
     const prompt = `
       Act as a medical actuary and human life analyst.
@@ -99,7 +99,7 @@ export const calculateLifeExpectancy = async (data: UserData): Promise<LifeExpec
 
     const weeksLived = Math.floor(currentAge * 52.1775);
     const totalWeeks = Math.floor(estimatedAge * 52.1775);
-    
+
     // Ensure we have a valid color palette for the returned stages
     const defaultColors = ["#22d3ee", "#4ade80", "#facc15", "#f472b6", "#a78bfa"];
     const stages = (result.lifeStages || []).map((stage: any, index: number) => ({
@@ -110,23 +110,50 @@ export const calculateLifeExpectancy = async (data: UserData): Promise<LifeExpec
     // Process AI milestones - ensure emojis exist
     const rawAiMilestones = result.milestones || [];
     const aiMilestones = rawAiMilestones.map((m: any) => ({
-        ...m,
-        emoji: m.emoji || '📍' // Fallback emoji if AI misses it
+      ...m,
+      emoji: m.emoji || '📍' // Fallback emoji if AI misses it
     }));
-    
+
     // If AI returns empty milestones for some reason, use the rich fallback list
     if (aiMilestones.length === 0) {
-        aiMilestones.push(
-            { age: 25, title: "Frontal Lobe Maturity", emoji: "🧠", description: "Brain fully developed." },
-            { age: 30, title: "Physical Peak", emoji: "💪", description: "Peak muscle mass and bone density." },
-            { age: 35, title: "Sarcopenia", emoji: "📉", description: "Muscle mass naturally begins to decrease." },
-            { age: 45, title: "Presbyopia", emoji: "👓", description: "Reading glasses often needed." },
-            { age: 50, title: "Cognitive Shift", emoji: "🧩", description: "Processing speed changes." },
-            { age: 60, title: "Empty Nest", emoji: "🐦", description: "Children leave home." },
-            { age: 65, title: "Retirement", emoji: "🌅", description: "Standard retirement age." },
-            { age: 70, title: "Peak Happiness", emoji: "😊", description: "Happiness U-curve upswing." }
-        );
+      aiMilestones.push(
+        { age: 25, title: "Frontal Lobe Maturity", emoji: "🧠", description: "Brain fully developed." },
+        { age: 30, title: "Physical Peak", emoji: "💪", description: "Peak muscle mass and bone density." },
+        { age: 35, title: "Sarcopenia", emoji: "📉", description: "Muscle mass naturally begins to decrease." },
+        { age: 45, title: "Presbyopia", emoji: "👓", description: "Reading glasses often needed." },
+        { age: 50, title: "Cognitive Shift", emoji: "🧩", description: "Processing speed changes." },
+        { age: 60, title: "Empty Nest", emoji: "🐦", description: "Children leave home." },
+        { age: 65, title: "Retirement", emoji: "🌅", description: "Standard retirement age." },
+        { age: 70, title: "Peak Happiness", emoji: "😊", description: "Happiness U-curve upswing." }
+      );
     }
+
+    // Hindu Sanskaras (16 Sacraments) - Cultural Milestones
+    const sanskarasMilestones = [
+      // Pre-natal Sanskaras
+      { age: 0, title: "Garbhadhana", emoji: "🌱", description: "The ritual for conception." },
+      { age: 0, title: "Pumsavana", emoji: "🤰", description: "A ceremony for fetal protection and well-being." },
+      { age: 0, title: "Simantonnayana", emoji: "🙏", description: "A ritual during pregnancy to ensure mother's and child's well-being." },
+
+      // Childhood Sanskaras
+      { age: 0, title: "Jatakarma", emoji: "👶", description: "Birth rituals performed immediately after a child is born." },
+      { age: 0, title: "Namakarana", emoji: "📜", description: "The naming ceremony for the child." },
+      { age: 0, title: "Nishkramana", emoji: "🚪", description: "The child's first outing from the home." },
+      { age: 1, title: "Annaprashana", emoji: "🍚", description: "The ceremony for the child's first solid food." },
+      { age: 3, title: "Chudakarana", emoji: "✂️", description: "The first haircutting ceremony (Mundan)." },
+      { age: 5, title: "Karnavedha", emoji: "💎", description: "The piercing of the earlobes." },
+
+      // Educational Sanskaras
+      { age: 5, title: "Vidyarambha", emoji: "📖", description: "The initiation into learning the alphabet." },
+      { age: 8, title: "Upanayana", emoji: "🧵", description: "The sacred thread ceremony." },
+      { age: 12, title: "Vedarambha", emoji: "📿", description: "The commencement of Vedic studies." },
+      { age: 16, title: "Keshant", emoji: "🪒", description: "The ceremony for shaving the beard (Godaan)." },
+      { age: 20, title: "Samavartan", emoji: "🎓", description: "The ritual marking the completion of studentship." },
+
+      // Post-educational and Death Sanskaras
+      { age: 25, title: "Vivaha", emoji: "💍", description: "The marriage ceremony." },
+      { age: 80, title: "Antyeshti", emoji: "🕯️", description: "The final rites or funeral rituals performed after death." }
+    ];
 
     // Process Custom Milestones from user input
     const customMilestones = (data.customMilestones || []).map(m => ({
@@ -136,8 +163,8 @@ export const calculateLifeExpectancy = async (data: UserData): Promise<LifeExpec
       description: "Personal Goal"
     }));
 
-    // Combine and sort milestones
-    const allMilestones = [...aiMilestones, ...customMilestones].sort((a: any, b: any) => a.age - b.age);
+    // Combine and sort milestones: AI + Sanskaras + Custom
+    const allMilestones = [...aiMilestones, ...sanskarasMilestones, ...customMilestones].sort((a: any, b: any) => a.age - b.age);
 
     return {
       estimatedAge,
@@ -170,14 +197,41 @@ export const calculateLifeExpectancy = async (data: UserData): Promise<LifeExpec
       { age: 65, title: "Retirement", emoji: "🌅", description: "Standard retirement age." },
       { age: 70, title: "Peak Happiness", emoji: "😊", description: "Happiness U-curve upswing." }
     ];
-    
+
+    // Hindu Sanskaras (16 Sacraments) - Cultural Milestones
+    const sanskarasMilestones = [
+      // Pre-natal Sanskaras
+      { age: 0, title: "Garbhadhana", emoji: "🌱", description: "The ritual for conception." },
+      { age: 0, title: "Pumsavana", emoji: "🤰", description: "A ceremony for fetal protection and well-being." },
+      { age: 0, title: "Simantonnayana", emoji: "🙏", description: "A ritual during pregnancy to ensure mother's and child's well-being." },
+
+      // Childhood Sanskaras
+      { age: 0, title: "Jatakarma", emoji: "👶", description: "Birth rituals performed immediately after a child is born." },
+      { age: 0, title: "Namakarana", emoji: "📜", description: "The naming ceremony for the child." },
+      { age: 0, title: "Nishkramana", emoji: "🚪", description: "The child's first outing from the home." },
+      { age: 1, title: "Annaprashana", emoji: "🍚", description: "The ceremony for the child's first solid food." },
+      { age: 3, title: "Chudakarana", emoji: "✂️", description: "The first haircutting ceremony (Mundan)." },
+      { age: 5, title: "Karnavedha", emoji: "💎", description: "The piercing of the earlobes." },
+
+      // Educational Sanskaras
+      { age: 5, title: "Vidyarambha", emoji: "📖", description: "The initiation into learning the alphabet." },
+      { age: 8, title: "Upanayana", emoji: "🧵", description: "The sacred thread ceremony." },
+      { age: 12, title: "Vedarambha", emoji: "📿", description: "The commencement of Vedic studies." },
+      { age: 16, title: "Keshant", emoji: "🪒", description: "The ceremony for shaving the beard (Godaan)." },
+      { age: 20, title: "Samavartan", emoji: "🎓", description: "The ritual marking the completion of studentship." },
+
+      // Post-educational and Death Sanskaras
+      { age: 25, title: "Vivaha", emoji: "💍", description: "The marriage ceremony." },
+      { age: 80, title: "Antyeshti", emoji: "🕯️", description: "The final rites or funeral rituals performed after death." }
+    ];
+
     const customMilestones = (data.customMilestones || []).map(m => ({
       age: m.age,
       title: m.title,
       emoji: m.emoji || '🎯',
       description: "Personal Goal"
     }));
-    const allMilestones = [...aiMilestones, ...customMilestones].sort((a, b) => a.age - b.age);
+    const allMilestones = [...aiMilestones, ...sanskarasMilestones, ...customMilestones].sort((a, b) => a.age - b.age);
 
     return {
       estimatedAge: fallbackAge,
