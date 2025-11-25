@@ -1,0 +1,5 @@
+{
+  "name": "Life in Weeks",
+  "description": "A visual life tracker inspired by Wait But Why. Track your life in weeks, estimate life expectancy using AI based on health metrics, and gain perspective on your time.",
+  "requestFramePermissions": []
+}
